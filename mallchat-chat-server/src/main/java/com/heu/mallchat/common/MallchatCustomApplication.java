@@ -10,7 +10,7 @@ import org.springframework.boot.web.servlet.ServletComponentScan;
  * @date 2021/05/27
  */
 @SpringBootApplication(scanBasePackages = {"com.heu.mallchat"})
-//@MapperScan({"com.heu.common.**.mapper"})
+@MapperScan({"com.heu.mallchat.common.**.mapper"})
 //@ServletComponentScan
 public class MallchatCustomApplication {
 
