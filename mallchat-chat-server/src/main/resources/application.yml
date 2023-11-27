@@ -32,3 +32,5 @@ wx:
         secret: ${mallchat.wx.secret} # 公众号的appsecret
         token: ${mallchat.wx.token} # 接口配置里的Token值
         aesKey: ${mallchat.wx.aesKey} # 接口配置里的EncodingAESKey值
+jwt:
+  secret: ${mallchat.jwt.secret}

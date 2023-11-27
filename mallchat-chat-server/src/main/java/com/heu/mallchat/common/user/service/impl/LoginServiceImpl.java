@@ -1,14 +1,49 @@
 package com.heu.mallchat.common.user.service.impl;
 
+import com.heu.mallchat.common.common.constant.RedisKey;
+import com.heu.mallchat.common.common.utils.JwtUtils;
+import com.heu.mallchat.common.common.utils.RedisUtils;
 import com.heu.mallchat.common.user.service.LoginService;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class LoginServiceImpl implements LoginService {
+    public static final int TOKEN_EXPIRE_DAYS = 3;
+    @Autowired
+    private JwtUtils jwtUtils;
 
+    @Override
+    public void renewalTokenIfNecessary(String token) {
+
+    }
 
     @Override
     public String login(Long uid) {
-        return null;
+        String token = jwtUtils.createToken(uid);
+        RedisUtils.set(getUserTokenKey(uid), token, TOKEN_EXPIRE_DAYS, TimeUnit.DAYS);
+        return token;
+    }
+
+    @Override
+    public Long getValidUid(String token) {
+//        String s = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjIwMDAwLCJjcmVhdGVUaW1lIjoxNzAxMDg2NTAzfQ.wE2AgnOdceCj6UTZ49d3bs5o3UkP0ZAaxkI54kYmrJs";
+        Long uid = jwtUtils.getUidOrNull(token);
+        if (Objects.isNull(uid)) {
+            return null;
+        }
+        String oldToken = RedisUtils.get(getUserTokenKey(uid));
+        if(StringUtils.isBlank(oldToken)) {
+            return null;
+        }
+        return uid;
+    }
+
+    private String getUserTokenKey(Long uid) {
+        return RedisKey.getKey(RedisKey.USER_TOKEN_STRING, uid);
     }
 }
