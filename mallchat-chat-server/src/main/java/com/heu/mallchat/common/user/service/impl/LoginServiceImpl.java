@@ -6,6 +6,7 @@ import com.heu.mallchat.common.common.utils.RedisUtils;
 import com.heu.mallchat.common.user.service.LoginService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -14,11 +15,22 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class LoginServiceImpl implements LoginService {
     public static final int TOKEN_EXPIRE_DAYS = 3;
+    public static final int TOKEN_RENEWAL_DAYS = 1;
     @Autowired
     private JwtUtils jwtUtils;
 
     @Override
+    @Async
     public void renewalTokenIfNecessary(String token) {
+        Long uid = getValidUid(token);
+        String userTokenKey = getUserTokenKey(uid);
+        Long expireDays = RedisUtils.getExpire(userTokenKey, TimeUnit.DAYS);
+        if (expireDays == -2 ) { //不存在的 key
+            return;
+        }
+        if(expireDays < TOKEN_RENEWAL_DAYS) {
+            RedisUtils.expire(userTokenKey, TOKEN_EXPIRE_DAYS, TimeUnit.DAYS);
+        }
 
     }
 
@@ -40,7 +52,7 @@ public class LoginServiceImpl implements LoginService {
         if(StringUtils.isBlank(oldToken)) {
             return null;
         }
-        return uid;
+        return Objects.equals(oldToken, token) ? uid : null;
     }
 
     private String getUserTokenKey(Long uid) {
