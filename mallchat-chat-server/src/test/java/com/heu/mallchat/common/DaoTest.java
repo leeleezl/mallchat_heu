@@ -28,6 +28,8 @@ public class DaoTest {
     private WxMpService wxMpService;
     @Autowired
     private JwtUtils jwtUtils;
+    @Autowired
+    private LoginService loginService;
 
     @Test
     public void test() throws WxErrorException {
@@ -56,11 +58,16 @@ public class DaoTest {
         rLock.unlock();
     }
 
-    @Autowired
-    private LoginService loginService;
     @Test
     public void isValid() {
         System.out.println(loginService.getValidUid("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOjIwMDAwLCJjcmVhdGVUaW1lIjoxNzAxMDg2NTAzfQ.wE2AgnOdceCj6UTZ49d3bs5o3UkP0ZAaxkI54kYmrJs"));
+    }
+
+    @Test
+    public void jwt() {
+        String login = loginService.login(20000L);
+        System.out.println(login);
+
     }
 
 }

@@ -22,7 +22,10 @@ public class HttpHeadersHandler extends ChannelInboundHandlerAdapter {
             UrlBuilder urlBuilder = UrlBuilder.ofHttp(request.uri());
 
             //获取token参数
-            String token = Optional.ofNullable(urlBuilder.getQuery()).map(k->k.get("token")).map(CharSequence::toString).orElse("");
+            String token = Optional.ofNullable(urlBuilder.getQuery())
+                    .map(k->k.get("token"))
+                    .map(CharSequence::toString)
+                    .orElse("");
             NettyUtil.setAttr(ctx.channel(), NettyUtil.TOKEN, token);
 
             //获取请求路径
