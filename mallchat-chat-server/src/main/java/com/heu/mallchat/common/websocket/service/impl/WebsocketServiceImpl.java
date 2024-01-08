@@ -5,9 +5,12 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.json.JSONUtil;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.heu.mallchat.common.common.event.UserOnlineEvent;
 import com.heu.mallchat.common.user.dao.UserDao;
+import com.heu.mallchat.common.user.domain.entity.IpInfo;
 import com.heu.mallchat.common.user.domain.entity.User;
 import com.heu.mallchat.common.user.service.LoginService;
+import com.heu.mallchat.common.websocket.NettyUtil;
 import com.heu.mallchat.common.websocket.domain.dto.WSChannelExtraDTO;
 import com.heu.mallchat.common.websocket.domain.enums.WSRespTypeEnum;
 import com.heu.mallchat.common.websocket.domain.vo.resp.WSBaseResp;
@@ -22,10 +25,12 @@ import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.bean.result.WxMpQrCodeTicket;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -44,6 +49,9 @@ public class WebsocketServiceImpl implements WebSocketService {
 
     @Autowired
     private LoginService loginService;
+
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
     /**
      * 管理所有用户的连接（登录态/游客）
      */
@@ -120,9 +128,12 @@ public class WebsocketServiceImpl implements WebSocketService {
         //保存 channel 的对应UID
         WSChannelExtraDTO wsChannelExtraDTO = ONLINE_WS_MAP.get(channel);
         wsChannelExtraDTO.setUid(user.getId());
-        //TODO 用户上线成功状态修改事件
         //推送成功消息
         sendMsg(channel, WebsocketAdapter.buildResp(user, token));
+        //用户上线成功状态修改事件
+        user.setLastOptTime(new Date());
+        user.refreshIp(NettyUtil.getAttr(channel, NettyUtil.IP));
+        applicationEventPublisher.publishEvent(new UserOnlineEvent(this, user));
     }
 
     private void sendMsg(Channel channel, WSBaseResp<?> resp) {

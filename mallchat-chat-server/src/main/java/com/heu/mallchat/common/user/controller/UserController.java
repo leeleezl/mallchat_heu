@@ -6,6 +6,8 @@ import com.heu.mallchat.common.common.domain.vo.resp.ApiResult;
 import com.heu.mallchat.common.common.interceptor.TokenInterceptor;
 import com.heu.mallchat.common.common.utils.RequestHolder;
 import com.heu.mallchat.common.user.domain.vo.req.ModifyNameReq;
+import com.heu.mallchat.common.user.domain.vo.req.WearingBadgeReq;
+import com.heu.mallchat.common.user.domain.vo.resp.BadgeResp;
 import com.heu.mallchat.common.user.domain.vo.resp.UserInfoResp;
 import com.heu.mallchat.common.user.service.UserService;
 import io.swagger.annotations.Api;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Controller;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * <p>
@@ -44,6 +47,19 @@ public class UserController {
     @ApiOperation("修改用户名")
     public ApiResult<Void> modifyName(@Valid @RequestBody ModifyNameReq req) {
         userService.modifyName(RequestHolder.get().getUid(), req.getName());
+        return ApiResult.success();
+    }
+
+    @GetMapping("/badges")
+    @ApiOperation("可选徽章预览")
+    public ApiResult<List<BadgeResp>> badges() {
+        return ApiResult.success(userService.badges(RequestHolder.get().getUid()));
+    }
+
+    @PutMapping("/badge")
+    @ApiOperation("佩戴徽章")
+    public ApiResult<Void> wearingBadge(@Valid @RequestBody WearingBadgeReq req) {
+        userService.wearingBadge(RequestHolder.get().getUid(), req.getItemId());
         return ApiResult.success();
     }
 

@@ -4,7 +4,12 @@ import com.heu.mallchat.common.common.utils.JwtUtils;
 import com.heu.mallchat.common.common.utils.RedisUtils;
 import com.heu.mallchat.common.user.dao.UserDao;
 import com.heu.mallchat.common.user.domain.entity.User;
+import com.heu.mallchat.common.user.domain.enums.IdempotentEnum;
+import com.heu.mallchat.common.user.domain.enums.ItemEnum;
+import com.heu.mallchat.common.user.service.IUserBackpackService;
 import com.heu.mallchat.common.user.service.LoginService;
+import com.heu.mallchat.common.user.service.UserService;
+import com.heu.mallchat.common.user.service.impl.UserBackpackServiceImpl;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.common.service.WxService;
 import me.chanjar.weixin.mp.api.WxMpService;
@@ -24,6 +29,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 public class DaoTest {
 
+    public static final long UID = 20000L;
     @Autowired
     private WxMpService wxMpService;
     @Autowired
@@ -67,6 +73,14 @@ public class DaoTest {
     public void jwt() {
         String login = loginService.login(20000L);
         System.out.println(login);
+
+    }
+
+    @Autowired
+    private IUserBackpackService iUserBackpackService;
+    @Test
+    public void acquireItem() {
+        iUserBackpackService.acquireItem(UID, ItemEnum.CONTRIBUTOR.getId(), IdempotentEnum.UID, UID+"");
 
     }
 

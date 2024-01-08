@@ -29,10 +29,10 @@ public class GlobalExceptionHandler {
         return ApiResult.fail(e.getErrorCode(), e.getErrorMsg());
     }
 
-    @ExceptionHandler(value = Throwable.class)
-    public ApiResult<?> throwable(Throwable e) {
-        log.error("system exception! The reason is:{}", e.getMessage());
-        return ApiResult.fail(CommonErrorEnum.SYSTEM_ERROR);
-    }
+//    @ExceptionHandler(value = Throwable.class)
+//    public ApiResult<?> throwable(Throwable e) {
+//        log.error("system exception! The reason is:{}", e.getMessage());
+//        return ApiResult.fail(CommonErrorEnum.SYSTEM_ERROR);
+//    }
 
 }
