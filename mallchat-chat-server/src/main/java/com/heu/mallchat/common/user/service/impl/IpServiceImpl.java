@@ -14,6 +14,7 @@ import com.heu.mallchat.common.user.domain.entity.User;
 import com.heu.mallchat.common.user.service.IpService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
-public class IpServiceImpl implements IpService {
+public class IpServiceImpl implements IpService, DisposableBean {
     private static ExecutorService executor = new ThreadPoolExecutor(1, 1,
             0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<Runnable>(500), new NamedThreadFactory("refresh-ipDetail", false));
@@ -100,4 +101,13 @@ public class IpServiceImpl implements IpService {
         }
     }
 
+    @Override
+    public void destroy() throws InterruptedException {
+        executor.shutdown();
+        if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {//最多等30秒，处理不完就拉倒
+            if (log.isErrorEnabled()) {
+                log.error("Timed out while waiting for executor [{}] to terminate", executor);
+            }
+        }
+    }
 }

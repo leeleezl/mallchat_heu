@@ -2,12 +2,8 @@ package com.heu.mallchat.common.common.event.listener;
 
 import com.heu.mallchat.common.common.enums.ChatActiveStatusEnum;
 import com.heu.mallchat.common.common.event.UserOnlineEvent;
-import com.heu.mallchat.common.common.event.UserRegisterEvent;
 import com.heu.mallchat.common.user.dao.UserDao;
 import com.heu.mallchat.common.user.domain.entity.User;
-import com.heu.mallchat.common.user.domain.enums.IdempotentEnum;
-import com.heu.mallchat.common.user.domain.enums.ItemEnum;
-import com.heu.mallchat.common.user.service.IUserBackpackService;
 import com.heu.mallchat.common.user.service.IpService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
@@ -27,7 +23,7 @@ public class UserOnlineListener {
 
     @Async
     @EventListener(classes = UserOnlineEvent.class)
-    public void saveDb(UserRegisterEvent event) {
+    public void saveDb(UserOnlineEvent event) {
         User user = event.getUser();
         User update = new User();
         update.setId(user.getId());

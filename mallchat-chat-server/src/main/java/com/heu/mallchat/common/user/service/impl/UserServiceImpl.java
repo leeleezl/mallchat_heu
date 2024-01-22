@@ -1,16 +1,19 @@
 package com.heu.mallchat.common.user.service.impl;
 
+import cn.hutool.log.Log;
+import com.heu.mallchat.common.common.event.UserBlackEvent;
 import com.heu.mallchat.common.common.event.UserRegisterEvent;
 import com.heu.mallchat.common.common.exception.BusinessException;
 import com.heu.mallchat.common.common.utils.AssertUtil;
+import com.heu.mallchat.common.user.dao.BlackDao;
 import com.heu.mallchat.common.user.dao.ItemConfigDao;
 import com.heu.mallchat.common.user.dao.UserBackpackDao;
 import com.heu.mallchat.common.user.dao.UserDao;
-import com.heu.mallchat.common.user.domain.entity.ItemConfig;
-import com.heu.mallchat.common.user.domain.entity.User;
-import com.heu.mallchat.common.user.domain.entity.UserBackpack;
+import com.heu.mallchat.common.user.domain.entity.*;
+import com.heu.mallchat.common.user.domain.enums.BlackTypeEnum;
 import com.heu.mallchat.common.user.domain.enums.ItemEnum;
 import com.heu.mallchat.common.user.domain.enums.ItemTypeEnum;
+import com.heu.mallchat.common.user.domain.vo.req.BlackReq;
 import com.heu.mallchat.common.user.domain.vo.resp.BadgeResp;
 import com.heu.mallchat.common.user.domain.vo.resp.UserInfoResp;
 import com.heu.mallchat.common.user.service.UserService;
@@ -25,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,6 +48,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
+
+    @Autowired
+    private BlackDao blackDao;
 
     @Override
     public Long register(User insertUser) {
@@ -95,6 +102,35 @@ public class UserServiceImpl implements UserService {
         ItemConfig itemConfig = itemConfigDao.getById(firstValidItem.getItemId());
         AssertUtil.equal(itemConfig.getType(), ItemTypeEnum.BADGE.getType(), "只有徽章才能佩戴");
         userDao.wearingBadge(uid, itemId);
+
+    }
+
+    @Override
+    public void black(BlackReq req) {
+        Long uid = req.getUid();
+        Black black = new Black();
+        black.setType(BlackTypeEnum.UID.getType());
+        black.setTarget(uid.toString());
+        blackDao.save(black);
+        User byId = userDao.getById(uid);
+        blackIp(Optional.ofNullable(byId.getIpInfo()).map(IpInfo::getCreateIp).orElse(null));
+        blackIp(Optional.ofNullable(byId.getIpInfo()).map(IpInfo::getUpdateIp).orElse(null));
+
+        applicationEventPublisher.publishEvent(new UserBlackEvent(this, byId));
+    }
+
+    private void blackIp(String ip) {
+        if(StringUtils.isBlank(ip)) {
+            return;
+        }
+        try{
+            Black insert = new Black();
+            insert.setType(BlackTypeEnum.IP.getType());
+            insert.setTarget(ip);
+            blackDao.save(insert);
+        }catch (Exception e) {
+
+        }
 
     }
 }
